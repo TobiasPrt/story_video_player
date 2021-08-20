@@ -1,7 +1,5 @@
 library story_video_player;
 
-/// A Calculator.
-class Calculator {
-  /// Returns [value] plus 1.
-  int addOne(int value) => value + 1;
-}
+export 'src/story_player.dart';
+export 'src/story_player_controller.dart';
+export 'src/story_video_info.dart';
