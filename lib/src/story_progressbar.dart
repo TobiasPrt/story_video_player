@@ -4,9 +4,13 @@ import 'package:story_video_player/story_video_player.dart';
 class StoryProgressBar extends StatelessWidget {
   final StoryPlayerController storyPlayerController;
   final Color color;
+  final double progressbarTopMargin;
 
   const StoryProgressBar(
-      {Key? key, required this.storyPlayerController, required this.color})
+      {Key? key,
+      required this.storyPlayerController,
+      required this.color,
+      required this.progressbarTopMargin})
       : super(key: key);
 
   @override
@@ -16,10 +20,12 @@ class StoryProgressBar extends StatelessWidget {
     return Container(
       height: 2,
       width: deviceWidth,
-      margin: EdgeInsets.only(top: 64),
+      margin: EdgeInsets.only(top: progressbarTopMargin),
       alignment: Alignment.topCenter,
-      child: Stack(children: [
-        Row(children: [...buildProgressBar(deviceWidth)]),
+      child: Stack(alignment: Alignment.center, children: [
+        Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [...buildProgressBar(deviceWidth)]),
       ]),
     );
   }
@@ -30,7 +36,7 @@ class StoryProgressBar extends StatelessWidget {
     List<StoryVideoInfo> videos = storyPlayerController.videos;
 
     for (int i = 0; i < videos.length; i++) {
-      double width = deviceWidth / videos.length - 8;
+      double width = deviceWidth / videos.length - 4;
 
       if (i < storyPlayerController.activeVideoIndex) {
         progressBarItems.add(ProgressBarItem(width: width, color: color));

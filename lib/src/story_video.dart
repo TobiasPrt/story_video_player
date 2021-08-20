@@ -24,8 +24,10 @@ class _StoryVideoState extends State<StoryVideo> {
     _controller = VideoPlayerController.network(widget.url)
       ..initialize().then((value) {
         widget.storyPlayerController.setVideoPlayerController(_controller);
-        setState(() {});
-        widget.storyPlayerController.startPlayback();
+        if (mounted) {
+          setState(() {});
+          widget.storyPlayerController.startPlayback();
+        }
       });
   }
 

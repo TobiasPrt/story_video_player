@@ -14,19 +14,21 @@ class _ExampleState extends State<Example> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Story Video Player Example',
-      home: StoryPlayer(
-        progressBarColor: Colors.yellow,
-        controller: StoryPlayerController(
-          videos: [
-            StoryVideoInfo(
-                url:
-                    'https://videotest.tobiaspoertner.com/videos/tempelhofer_feld.m3u8',
-                length: const Duration(milliseconds: 29433)),
-            StoryVideoInfo(
-                url:
-                    'https://videotest.tobiaspoertner.com/videos/tempelhofer_feld.m3u8',
-                length: const Duration(milliseconds: 29433)),
-          ],
+      home: Scaffold(
+        body: StoryPlayer(
+          progressBarColor: Colors.yellow,
+          controller: StoryPlayerController(
+            videos: [
+              StoryVideoInfo(
+                  url:
+                      'https://videotest.tobiaspoertner.com/videos/tempelhofer_feld.m3u8',
+                  length: const Duration(milliseconds: 29433)),
+              StoryVideoInfo(
+                  url:
+                      'https://videotest.tobiaspoertner.com/videos/tempelhofer_feld.m3u8',
+                  length: const Duration(milliseconds: 29433)),
+            ],
+          ),
         ),
       ),
     );
