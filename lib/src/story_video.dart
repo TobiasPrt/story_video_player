@@ -1,54 +1,49 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
-import 'package:story_video_player/story_video_player.dart';
-
-class StoryVideo extends StatefulWidget {
+/// Class representing all the needed information for a video object in a [StoryPlayerController]
+class StoryVideo {
+  /// String to the url of the video file
   final String url;
-  final StoryPlayerController storyPlayerController;
 
-  StoryVideo({Key? key, required this.url, required this.storyPlayerController})
-      : super(key: UniqueKey());
+  /// Length as [Duration] of the video, for best results use ms
+  final Duration length;
 
-  @override
-  _StoryVideoState createState() => _StoryVideoState();
-}
+  /// Thumbnail image (optional, but highly recommended)
+  final NetworkImage? thumbnail;
 
-class _StoryVideoState extends State<StoryVideo> {
-  late VideoPlayerController _controller;
+  /// Whether or not the [VideoPlayerController] of this video is already initialized
+  bool isLoaded = false;
 
-  @override
-  void initState() {
-    super.initState();
+  /// The controller of this video
+  late VideoPlayerController controller;
 
-    _controller = VideoPlayerController.network(widget.url)
-      ..initialize().then((value) {
-        widget.storyPlayerController.setVideoPlayerController(_controller);
-        if (mounted) {
-          setState(() {});
-          widget.storyPlayerController.startPlayback();
-        }
-      });
+  StoryVideo(
+      {required this.url, required this.length, required this.thumbnail}) {
+    controller = VideoPlayerController.network(url);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return _controller.value.isInitialized
-        ? SizedBox.expand(
-            child: FittedBox(
-              fit: BoxFit.cover,
-              child: SizedBox(
-                  width: _controller.value.size.width,
-                  height: _controller.value.size.height,
-                  child: VideoPlayer(_controller)),
-            ),
-          )
-        : Container();
+  /// Initializes the [VideoPlayerController] and therefore loads the video
+  Future<void> loadVideo() async {
+    await controller.initialize();
+    isLoaded = true;
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  /// Reinitializes the controller of the video
+  void reinitialize() {
+    controller = VideoPlayerController.network(url);
+    isLoaded = false;
   }
+
+  /// Define custom comparison operator to differentiate by url
+  @override
+  bool operator ==(Object other) {
+    return other is StoryVideo &&
+        other.runtimeType == runtimeType &&
+        url == other.url;
+  }
+
+  /// Needed for the custom comparison operator to compare strings
+  @override
+  int get hashCode => url.hashCode;
 }

@@ -1,0 +1,10 @@
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-TARGETDURATION:13
+#EXT-X-MEDIA-SEQUENCE:1
+#EXT-X-PLAYLIST-TYPE:VOD
+#EXTINF:12,
+https://ddgn79nxo4efd.cloudfront.net/waypoint-videos/aquarium_dubaiencodedexplo_00001.ts
+#EXTINF:9,
+https://ddgn79nxo4efd.cloudfront.net/waypoint-videos/aquarium_dubaiencodedexplo_00002.ts
+#EXT-X-ENDLIST

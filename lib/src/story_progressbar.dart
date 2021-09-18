@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:story_video_player/story_video_player.dart';
+
+import '../story_video_player.dart';
 
 class StoryProgressBar extends StatelessWidget {
   final StoryPlayerController storyPlayerController;
@@ -33,7 +34,7 @@ class StoryProgressBar extends StatelessWidget {
   List<Widget> buildProgressBar(double deviceWidth) {
     List<Widget> progressBarItems = [];
 
-    List<StoryVideoInfo> videos = storyPlayerController.videos;
+    List<StoryVideo> videos = storyPlayerController.videos;
 
     for (int i = 0; i < videos.length; i++) {
       double width = deviceWidth / videos.length - 4;
@@ -110,7 +111,7 @@ class _AnimatedProgressBarItemState extends State<AnimatedProgressBarItem>
   void initState() {
     super.initState();
 
-    widget.storyPlayerController.setProgressBarController(_animationController);
+    // widget.storyPlayerController.setProgressBarController(_animationController);
   }
 
   @override
