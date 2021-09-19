@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:story_video_player/src/story_progressbar.dart';
 
 import '../story_video_player.dart';
 
@@ -40,13 +41,6 @@ class StoryPlayer extends StatefulWidget {
 }
 
 class _StoryPlayerState extends State<StoryPlayer> {
-  late Future videoLoadingState;
-  @override
-  void initState() {
-    videoLoadingState = widget.controller.videos[0].loadVideo();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     double deviceWidth = MediaQuery.of(context).size.width;
@@ -54,84 +48,77 @@ class _StoryPlayerState extends State<StoryPlayer> {
     return Container(
       child: Stack(
         children: [
+          if (widget.controller.videos[widget.controller.activeVideoIndex]
+                  .thumbnail !=
+              null)
+            SizedBox.expand(
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: Container(
+                    child: Image(
+                  image: widget.controller
+                      .videos[widget.controller.activeVideoIndex].thumbnail!,
+                  fit: BoxFit.cover,
+                )),
+              ),
+            ),
           StreamBuilder<int>(
               stream: widget.controller.activeVideoIndexStream,
               initialData: 0,
               builder: (context, snapshot) {
-                // Widget to be placed as a video player
-                Widget videoPlayerWidget;
-
-                if (widget.controller.videos[snapshot.data!].isLoaded) {
-                  // Declare video player if video is already loaded
-                  videoPlayerWidget = StoryVideoWidget(
-                    storyVideo: widget.controller.videos[snapshot.data!],
-                  );
-                } else {
-                  // Declare futurebuilder, which loads the video
-                  videoPlayerWidget = FutureBuilder<void>(
-                    future: snapshot.data! == 0
-                        ? videoLoadingState
-                        : widget.controller.videos[snapshot.data!].loadVideo(),
-                    builder: (BuildContext context,
-                        AsyncSnapshot<dynamic> asyncSnapshot) {
-                      // Show video player if loading is done
-                      if (asyncSnapshot.connectionState ==
-                          ConnectionState.done) {
-                        return StoryVideoWidget(
-                          storyVideo: widget.controller.videos[snapshot.data!],
-                        );
-                      }
-
-                      // show loadingindicator instead
-                      return Container(
-                        child: Center(
-                          child: CircularProgressIndicator.adaptive(),
-                        ),
-                      );
-                    },
-                  );
-                }
-
                 // Preload next video
                 widget.controller.preloadNextVideo();
 
-                // Continue building widgets
+                // build Widgets
                 return Stack(
                   children: [
-                    widget.controller.videos[snapshot.data!].thumbnail != null
-                        ? SizedBox.expand(
-                            child: FittedBox(
-                              fit: BoxFit.cover,
-                              child: Container(
-                                  child: Image(
-                                image: widget.controller.videos[snapshot.data!]
-                                    .thumbnail!,
-                                fit: BoxFit.cover,
-                              )),
+                    FutureBuilder<void>(
+                      future:
+                          widget.controller.videos[snapshot.data!].loadVideo(),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<dynamic> asyncSnapshot) {
+                        // Show video player if loading is done
+                        if (asyncSnapshot.connectionState ==
+                            ConnectionState.done) {
+                          return StoryVideoWidget(
+                            storyController: widget.controller,
+                            storyVideo:
+                                widget.controller.videos[snapshot.data!],
+                          );
+                        }
+
+                        // show loadingindicator and thumbnail instead
+                        return Stack(
+                          children: [
+                            Container(
+                              child: Center(
+                                child: CircularProgressIndicator.adaptive(),
+                              ),
                             ),
-                          )
-                        : Container(),
-                    videoPlayerWidget,
-                    // StoryProgressBar(
-                    //   storyPlayerController: widget.controller,
-                    //   color: widget.progressBarColor ?? Colors.green,
-                    //   progressbarTopMargin: widget.progressbarTopMargin,
-                    // ),
-                    GestureDetector(
-                      onTapUp: (TapUpDetails details) {
-                        if (details.globalPosition.dx > deviceWidth / 2) {
-                          widget.controller.next();
-                        }
-                        if (details.globalPosition.dx < deviceWidth / 2) {
-                          widget.controller.prev();
-                        }
+                          ],
+                        );
                       },
-                      onVerticalDragEnd: widget.onVerticalDragEnd,
-                      onHorizontalDragEnd: widget.onHorizontalDragEnd,
-                    )
+                    ),
+                    StoryProgressbar(
+                      storyPlayerController: widget.controller,
+                      color: widget.progressBarColor ?? Colors.green,
+                      progressbarTopMargin: widget.progressbarTopMargin,
+                    ),
                   ],
                 );
               }),
+          GestureDetector(
+            onTapUp: (TapUpDetails details) {
+              if (details.globalPosition.dx > deviceWidth / 2) {
+                widget.controller.next();
+              }
+              if (details.globalPosition.dx < deviceWidth / 2) {
+                widget.controller.prev();
+              }
+            },
+            onVerticalDragEnd: widget.onVerticalDragEnd,
+            onHorizontalDragEnd: widget.onHorizontalDragEnd,
+          )
         ],
       ),
     );

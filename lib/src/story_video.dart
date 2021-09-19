@@ -18,13 +18,15 @@ class StoryVideo {
   /// The controller of this video
   late VideoPlayerController controller;
 
-  StoryVideo(
-      {required this.url, required this.length, required this.thumbnail}) {
+  StoryVideo({required this.url, required this.length, this.thumbnail}) {
     controller = VideoPlayerController.network(url);
   }
 
   /// Initializes the [VideoPlayerController] and therefore loads the video
   Future<void> loadVideo() async {
+    if (controller.value.isInitialized) {
+      return;
+    }
     await controller.initialize();
     isLoaded = true;
   }

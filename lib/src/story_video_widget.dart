@@ -5,11 +5,16 @@ import '../story_video_player.dart';
 
 /// Widget representing a single video instance inside a [StoryPlayer] widget
 class StoryVideoWidget extends StatefulWidget {
+  /// The linked story video object including all necessary information
   final StoryVideo storyVideo;
+
+  /// The controller managing the parent [StoryPlayer]
+  final StoryPlayerController storyController;
 
   StoryVideoWidget({
     Key? key,
     required this.storyVideo,
+    required this.storyController,
   }) : super(key: UniqueKey());
 
   @override
@@ -20,7 +25,7 @@ class _StoryVideoWidgetState extends State<StoryVideoWidget> {
   @override
   void initState() {
     super.initState();
-    widget.storyVideo.controller.play();
+    widget.storyController.play();
   }
 
   @override

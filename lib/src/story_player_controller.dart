@@ -30,6 +30,14 @@ class StoryPlayerController {
   /// Whether or not this controller was disposed
   bool isDisposed = false;
 
+  /// Animation controller for the currently active video
+  ///
+  /// There is only one animation controller active at any given time:
+  /// The animation controller for the current videos part in the progressbar, all other parts
+  /// of the progressbar are static. When skipping around storyitems, the respective parts in the
+  /// the progressbar will rebuild as needed.
+  late AnimationController? progressBarController;
+
   StoryPlayerController(
       {required this.videos, this.preloadingType = PreloadingType.none}) {
     // Initialize stream and add first item
@@ -67,7 +75,8 @@ class StoryPlayerController {
   /// This function does not work, when [preloadingType == PreloadingType.none], use
   /// [preloadVideo()] instead.
   Future<void> preloadNextVideo() async {
-    if (preloadingType != PreloadingType.none) {
+    if (preloadingType != PreloadingType.none &&
+        activeVideoIndex != videos.length - 1) {
       await preloadVideo(activeVideoIndex + 1);
     }
   }
@@ -83,26 +92,28 @@ class StoryPlayerController {
 
   /// Starts playing the current video
   Future<void> play() async {
+    progressBarController!.forward();
     await videos[activeVideoIndex].controller.play();
   }
 
   /// Pauses the current video
   Future<void> pause() async {
     await videos[activeVideoIndex].controller.pause();
+    progressBarController!.stop();
   }
 
   /// Skips to the next video
   Future<void> next() async {
-    // Pause current video
-    await pause();
-    // Reset current video position
-    videos[activeVideoIndex].controller.seekTo(Duration.zero);
-    // Increase index
-    activeVideoIndex = activeVideoIndex == videos.length - 1
-        ? videos.length - 1
-        : activeVideoIndex + 1;
-    // Add event to stream
-    _activeIndexStreamController.add(activeVideoIndex);
+    if (activeVideoIndex < videos.length - 1) {
+      // Pause current video
+      await pause();
+      // Reset current video position
+      videos[activeVideoIndex].controller.seekTo(Duration.zero);
+      // Increase index
+      activeVideoIndex = activeVideoIndex + 1;
+      // Add event to stream
+      _activeIndexStreamController.add(activeVideoIndex);
+    }
   }
 
   /// Skips to the previous video
@@ -140,34 +151,31 @@ class StoryPlayerController {
         video.controller.dispose();
         isDisposed = true;
       } else {
+        // Reset stream
+        activeVideoIndex = 0;
+        _activeIndexStreamController.add(activeVideoIndex);
+
         video.controller.pause();
         video.controller.seekTo(Duration.zero);
       }
     }
   }
+
+  /// Sets the animation controller for the currently active part of the progress bar
+  void setProgressBarController(AnimationController animationController) {
+    progressBarController = animationController;
+    // Add listener for autoplay when video has finished
+    progressBarController?.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        next();
+      }
+    });
+  }
+
+  /// Resets the current progressbarController
+  void disposeProgressBarController() {
+    progressBarController = null;
+  }
 }
 
 enum PreloadingType { none, onlyFirstVideo, allVideos }
-
-// class StoryPlayerController {
-//   /// Animation controller for the currently active video
-//   ///
-//   /// There is only one animation controller active at any given time:
-//   /// The animation controller for the current videos part in the progressbar, all other parts
-//   /// of the progressbar are static. When skipping around storyitems, the respective parts in the
-//   /// the progressbar will rebuild as needed.
-//   late AnimationController? progressBarController;
-
-//   void setProgressBarController(AnimationController animationController) {
-//     progressBarController = animationController;
-
-//     progressBarController?.addStatusListener((status) {
-//       if (status == AnimationStatus.completed) {
-//         nextVideo();
-//       }
-//     });
-//   }
-
-//   void disposeProgressBarController() {
-//     progressBarController = null;
-//   }

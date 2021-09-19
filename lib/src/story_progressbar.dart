@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:story_video_player/src/animated_progressbar_item.dart';
+import 'package:story_video_player/src/progressbar_item.dart';
 
 import '../story_video_player.dart';
 
-class StoryProgressBar extends StatelessWidget {
+/// This widget represents the progressbar for a [StoryPlayer] instance.
+class StoryProgressbar extends StatelessWidget {
+  /// The controller of the linked story
   final StoryPlayerController storyPlayerController;
+
+  /// The color the progress should be in
   final Color color;
+
+  /// The margin from the top the progressbar should have. Useful for notched devices or if any
+  /// additional widgets are placed on top of the video like a title.
   final double progressbarTopMargin;
 
-  const StoryProgressBar(
+  const StoryProgressbar(
       {Key? key,
       required this.storyPlayerController,
       required this.color,
@@ -31,6 +40,8 @@ class StoryProgressBar extends StatelessWidget {
     );
   }
 
+  /// Builds the progressBar and only uses 1 [AnimatedProgressbarItem] at a time. The rest of the bar
+  /// is static. This will rebuild any time the user skips around the videos in the story.
   List<Widget> buildProgressBar(double deviceWidth) {
     List<Widget> progressBarItems = [];
 
@@ -40,14 +51,14 @@ class StoryProgressBar extends StatelessWidget {
       double width = deviceWidth / videos.length - 4;
 
       if (i < storyPlayerController.activeVideoIndex) {
-        progressBarItems.add(ProgressBarItem(width: width, color: color));
+        progressBarItems.add(ProgressbarItem(width: width, color: color));
       } else if (i == storyPlayerController.activeVideoIndex) {
         progressBarItems.add(Container(
           width: width,
           child: Stack(
             children: [
-              ProgressBarItem(width: width, color: Colors.black.withAlpha(40)),
-              AnimatedProgressBarItem(
+              ProgressbarItem(width: width, color: Colors.black.withAlpha(40)),
+              AnimatedProgressbarItem(
                   storyPlayerController: storyPlayerController,
                   width: width,
                   color: color),
@@ -56,82 +67,9 @@ class StoryProgressBar extends StatelessWidget {
         ));
       } else {
         progressBarItems.add(
-            ProgressBarItem(width: width, color: Colors.black.withAlpha(40)));
+            ProgressbarItem(width: width, color: Colors.black.withAlpha(40)));
       }
     }
     return progressBarItems;
-  }
-}
-
-class ProgressBarItem extends StatelessWidget {
-  final double width;
-  final Color color;
-
-  const ProgressBarItem({Key? key, required this.width, required this.color})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 2,
-      width: width,
-      color: color,
-      margin: EdgeInsets.symmetric(horizontal: 2),
-    );
-  }
-}
-
-class AnimatedProgressBarItem extends StatefulWidget {
-  final StoryPlayerController storyPlayerController;
-  final double width;
-  final Color color;
-
-  const AnimatedProgressBarItem(
-      {Key? key,
-      required this.storyPlayerController,
-      required this.width,
-      required this.color})
-      : super(key: key);
-
-  @override
-  _AnimatedProgressBarItemState createState() =>
-      _AnimatedProgressBarItemState();
-}
-
-class _AnimatedProgressBarItemState extends State<AnimatedProgressBarItem>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _animationController = AnimationController(
-      duration: widget.storyPlayerController
-          .videos[widget.storyPlayerController.activeVideoIndex].length,
-      vsync: this);
-  late final Animation<double> _animation =
-      CurvedAnimation(parent: _animationController, curve: Curves.linear);
-
-  @override
-  void initState() {
-    super.initState();
-
-    // widget.storyPlayerController.setProgressBarController(_animationController);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizeTransition(
-      sizeFactor: _animation,
-      axis: Axis.horizontal,
-      axisAlignment: -1,
-      child: Container(
-        height: 2,
-        width: widget.width,
-        color: widget.color,
-        margin: EdgeInsets.symmetric(horizontal: 2),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
   }
 }

@@ -9,99 +9,90 @@ class Example extends StatefulWidget {
 }
 
 class _ExampleState extends State<Example> {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Story Video Player Example',
-      home: Home(),
-    );
-  }
-}
-
-class Home extends StatefulWidget {
-  const Home({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  _HomeState createState() => _HomeState();
-}
-
-class _HomeState extends State<Home> {
   late StoryPlayerController storyController;
 
   @override
   void initState() {
     super.initState();
+    // Declare your controller anywhere you like. Depending on what you choose for the preloadingType
+    // preloading will be triggered by the constructor.
     storyController = StoryPlayerController(
-      preloadingType: PreloadingType.onlyFirstVideo,
+      preloadingType: PreloadingType.none,
       videos: [
         StoryVideo(
             thumbnail: NetworkImage(
                 'https://videotest.tobiaspoertner.com/image-001.jpeg'),
             url:
                 'https://ddgn79nxo4efd.cloudfront.net/waypoint-videos/aquarium_dubai.m3u8',
-            length: const Duration(milliseconds: 29433)),
+            length: const Duration(milliseconds: 21000)),
         StoryVideo(
             thumbnail: NetworkImage(
-                'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Image_created_with_a_mobile_phone.png/1200px-Image_created_with_a_mobile_phone.png'),
+                'https://videotest.tobiaspoertner.com/image-001.jpeg'),
             url:
-                'https://videotest.tobiaspoertner.com/videos/ts/tempelhofer_feld_ts.m3u8',
-            length: const Duration(milliseconds: 29433)),
+                'https://ddgn79nxo4efd.cloudfront.net/waypoint-videos/aquarium_dubai.m3u8',
+            length: const Duration(milliseconds: 21000)),
       ],
     );
   }
 
   @override
   void didChangeDependencies() {
+    // This needs to be called within buildcontext for precaching. Though calling this is totally
+    // optionally and makes most sense, when not preloading videos or if you expect users to skip
+    // videos a lot and only preload the first video of the story. With this feature the loading
+    // time will feel a lot faster.
     storyController.preCacheImages(context);
     super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        child: Center(
-          child: MaterialButton(
-            onPressed: () {
-              if (storyController.isDisposed) {
-                storyController.reinitializeVideos();
-              }
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => VideoScreen(
-                          storyController: storyController,
-                        )),
-              );
-            },
-            child: Text('zum videoscreen'),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Story Video Player Example',
+      home: Builder(builder: (context) {
+        return Scaffold(
+          body: Container(
+            child: Center(
+              child: MaterialButton(
+                onPressed: () {
+                  // This is just an example for a check you can use, when you hard dispose the
+                  // controller to avoid errors. Hard disposing might be useful if you expect a lot
+                  // of different stories to be accessible from the same screen, to avoid
+                  // unnecessary RAM usage and ultimately crashes.
+                  if (storyController.isDisposed) {
+                    storyController.reinitializeVideos();
+                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => StoryScreen(
+                              storyController: storyController,
+                            )),
+                  );
+                },
+                child: Text('Open Stories'),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 }
 
-class VideoScreen extends StatefulWidget {
+class StoryScreen extends StatelessWidget {
   final StoryPlayerController storyController;
 
-  const VideoScreen({Key? key, required this.storyController})
+  const StoryScreen({Key? key, required this.storyController})
       : super(key: key);
 
-  @override
-  _VideoScreenState createState() => _VideoScreenState();
-}
-
-class _VideoScreenState extends State<VideoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: StoryPlayer(
         progressBarColor: Colors.yellow,
-        controller: widget.storyController,
+        controller: storyController,
       ),
     );
   }
