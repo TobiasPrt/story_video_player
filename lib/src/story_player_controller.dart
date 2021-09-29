@@ -82,10 +82,10 @@ class StoryPlayerController {
   }
 
   /// Call this function to precache images so they show up immediately
-  void preCacheImages(BuildContext context) {
+  Future<void> preCacheImages(BuildContext context) async {
     for (StoryVideo video in videos) {
       if (video.thumbnail != null) {
-        precacheImage(video.thumbnail!, context);
+        await precacheImage(video.thumbnail!, context);
       }
     }
   }
